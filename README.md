@@ -4,7 +4,7 @@
 
 `apt-get` for Pythonista.
 
-*NOTE:* _There is a ton of introductory documentation located over at http://seanld.me/latte!_
+*NOTE:* _Latte's docs are now in [this](https://github.com/sn3ksoftware/Latte/wiki) wiki. Go check it out!_
 
 ## What's The Point?
 
@@ -26,4 +26,4 @@ import requests as r; exec(r.get("https://raw.githubusercontent.com/sn3ksoftware
 
 ## Getting Started
 
-If you want to learn how to properly use Latte, you can head over to http://seanld.me/latte. There's plenty of information over there to get you started!
+If you want to learn how to properly use Latte, you can head over to the [wiki](https://github.com/sn3ksoftware/Latte/wiki). There's plenty of information over there to get you started!
