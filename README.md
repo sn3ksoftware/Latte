@@ -32,7 +32,7 @@ import requests as r; exec(r.get("https://raw.githubusercontent.com/sn3ksoftware
 
 ## Repositories
 
-_Latte_ uses [this] repository for packages by defualt
+_Latte_ uses [this](https://github.com/sn3ksoftware/latte-universe) repository for packages by defualt
 
 (nickname **universe**)
 
