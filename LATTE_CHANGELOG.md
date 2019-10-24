@@ -2,7 +2,7 @@
 
 ## 2.0.0-alpha
 - Joining file paths now uses `os.path.join()`.
-- `ROOT` variable is now set as `os.path.expanduser("~")`.
+- `ROOT` variable is now set as `os.path.expanduser("~/Documents")` on StaSh and `os.path.expanduser("~/Library")` on Libterm.
 - Repos can now be removed with `latte del-repo nickname`.
 - The `stansi` class for colours now has been split into two `ansi` colours, one for StaSh and another for LibTerm.
 - New function, `onstash()`, to check if Latte is running in a StaSh instance.
