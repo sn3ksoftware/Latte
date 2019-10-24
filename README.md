@@ -12,7 +12,7 @@ When I was using [StaSh](https://github.com/ywangd/stash) on Pythonista, I found
 
 Now users of StaSh can easily communicate their software to other users. No more transfer problems.
 
-_Latte_ is also a platform for easily creating your own commands for StaSh. It allows you to install packages that install programs to StaSh's `stash_extensions/bin` directory. Now you can create your own commands!
+_Latte_ is also a platform for easily creating your own commands for StaSh. It allows you to install packages that install programs to StaSh's `~/Documents/bin` directory. Now you can create your own commands!
 
 ## Installing
 
@@ -52,3 +52,13 @@ _Latte_ uses [this](https://github.com/sn3ksoftware/latte-universe) repository f
 ## Getting Started
 
 If you want to learn how to properly use Latte, you can head over to the [wiki](https://github.com/sn3ksoftware/Latte/wiki). There's plenty of information over there to get you started!
+
+## License
+
+There is unfortunately ambiguity to what license the original Latte code is under. Hence, I will assume the code under public domain, with my modifications under the MIT License:
+
+```
+MIT License
+
+Copyright (c) 2019 Seanld/sn3ksoftware
+```
