@@ -18,7 +18,7 @@ from os.path import join
 
 import requests
 
-__version__ = "2.0.1-alpha"
+__version__ = "2.0.1"
 __author__ = "Seanld/sn3ksoftware"
 __copyright__ = "Copyright (c) Seanld/sn3ksoftware 2017-2019, MIT License."
 desc = "apt-get for Pythonista, version {v}.\n{c}".format(
