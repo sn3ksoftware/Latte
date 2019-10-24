@@ -1,12 +1,31 @@
+# Installer file for Latte, a Python-based
+# package manager for Pythonista/Libterm.
+
 import os
 import requests
 
-BINPATH = os.path.join(os.path.expanduser("~"), "Documents", "bin")
+ROOT = os.path.expanduser("~")
+
+try:
+    import objc_util
+except ImportError:
+    BINPATH = os.path.join(ROOT, "Library", "bin")
+else:
+    BINPATH = os.path.join(ROOT, "Documents", "bin")
 
 print("Downloading...")
 
-request = requests.get("https://raw.githubusercontent.com/sn3ksoftware/Latte/master/latte.py")
-data = request.text
+try:
+    request = requests.get(
+        "https://raw.githubusercontent.com/sn3ksoftware/Latte/master/latte.py"
+    )
+except requests.ConnectionError:
+    print("ERROR: Could not connect to server!!! Check your Internet?")
+    exit()
+except Exception as e:
+    print("ERROR: Unhandled exception occured! Exception:" + str(e))
+else:
+    data = request.text
 
 print("Installing...")
 
