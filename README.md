@@ -22,19 +22,32 @@ _Latte_ supports these platforms right now:
 - [x] StaSh (on Pythonista)
 - [ ] Generic Linux/GNU
 
-If you are using Pythonista, install StaSh first with `import requests as r; exec(r.get('https://bit.ly/get-stash').text)`
+### StaSh (Pythonista)
+If StaSh is not installed already, install StaSh first with:
 
-To install _Latte_ to your Pythonista application, copy the below code, go to your Pythonista line-interpreter (the panel that swipes over on the right, that lets you type in Python code line-by-line), and paste the code, and run it. This should run the installer program provided in the repository. Once it starts running, you should start seeing your new package manager being installed to your StaSh.
+```python
+import requests as r; exec(r.get('https://bit.ly/get-stash').text)
+```
+
+To install _Latte_ to Pythonista, copy the below code, go to your Pythonista line-interpreter (the panel that swipes over on the right, that lets you type in Python code line-by-line), and paste the code, and run it. This should run the installer program provided in the repository. Once it starts running, you should start seeing your new package manager being installed to your StaSh.
 
 ```python
 import requests as r; exec(r.get("https://raw.githubusercontent.com/sn3ksoftware/Latte/master/installer.py").text);
 ```
 
+### LibTerm
+Copy and paste the below code to your terminal:
+
+```
+curl -O https://raw.githubusercontent.com/sn3ksoftware/Latte/master/installer.py
+python installer.py
+```
+
 ## Repositories
 
-_Latte_ uses [this](https://github.com/sn3ksoftware/latte-universe) repository for packages by defualt
+_Latte_ uses [this](https://github.com/sn3ksoftware/latte-universe) repository for packages by default
 
-(nickname **universe**)
+(with nickname **universe**).
 
 ## Getting Started
 
