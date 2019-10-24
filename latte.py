@@ -18,13 +18,23 @@ from os.path import join
 
 import requests
 
-__version__ = "2.0.1"
+
+def f(fstr):
+    """f-strings for older versions of Python
+    i.e 2.7+, 3.5-.
+    Uses globals(), which is somewhat hacky.
+    """
+    if type(fstr) is str:
+        fstr_p = fstr.format(**globals())
+        return fstr_p
+    else:
+        return None
+
+
+__version__ = "2.0.2-alpha"
 __author__ = "Seanld/sn3ksoftware"
 __copyright__ = "Copyright (c) Seanld/sn3ksoftware 2017-2019, MIT License."
-desc = "apt-get for Pythonista, version {v}.\n{c}".format(
-    v=__version__,
-    c=__copyright__
-)
+desc = f("apt-get for Pythonista, version {__version__}.\n{__copyright__}")
 
 
 def onstash():
@@ -143,9 +153,14 @@ class SWConfig(object):
         for line in content.splitlines():
             if line == "":
                 continue
-            else:
-                key = line.split("=")[0]
+
+            key = line.split("=")[0]
+            # If value does not exist, replace with None
+            try:
                 value = line.split("=")[1]
+            except IndexError:
+                value = None
+            finally:
                 self.data[key] = value
 
     def __getitem__(self, key):
@@ -165,12 +180,10 @@ def init():
             try:
                 os.mkdir(path)
             except Exception as e:
+                err = str(e)
                 print(
                     Red("ERROR") +
-                    ": Could not create {p}. Traceback: {err}".format(
-                            p=path,
-                            err=str(e)
-                        )
+                f(": Could not create {path}. Traceback: {err}")
                 )
             else:
                 continue
@@ -282,9 +295,10 @@ def main(sargs):
                 join(LATTEPATH, package_name + ".latte")
             )
         except Exception as e:
+            err = str(e)
             print(
                 Red("ERROR") +
-                ": Could not move meta.latte to LATTEPATH. Error: {str(e)}"
+                f(": Could not move meta.latte to LATTEPATH. Error: {err}")
             )
             sys.exit()
         else:
@@ -296,9 +310,10 @@ def main(sargs):
                 join(BINPATH, package_name + ".py")
             )
         except Exception as e:
+            err = str(e)
             print(
                 Red("ERROR") +
-                ": Could not move bin.py to BINPATH. Exeception: {str(e)}"
+                f(": Could not move bin.py to BINPATH. Exeception: {err}")
             )
         else:
             pass
@@ -321,11 +336,10 @@ def main(sargs):
             )
             sys.exit()
         except Exception as e:
+            err = str(e)
             print(
                 Red("ERROR") +
-                ": Couldn't remove package. Exception: {err}".format(
-                        err=str(e)
-                    )
+                ": Couldn't remove package. Exception: {err}"
             )
             sys.exit()
         print(Green("SUCCESS") + ": '" + args.package + "' removed!")
@@ -350,10 +364,10 @@ def main(sargs):
                 ": Couldn't generate package; directory may already exist."
             )
         except Exception as e:
+            err = str(e)
             print(
                 Red("ERROR") +
-                ": Exception occured. Traceback: " +
-                str(e)
+                ": Exception occured. Traceback: {err}"
             )
     elif args.method == "add-repo":
         try:
@@ -392,9 +406,7 @@ def main(sargs):
             except KeyError:
                 print(
                     Red("ERROR") +
-                    ": No repository with nickname {name}.".format(
-                            name=args.packqge
-                        )
+                    f(": No repository with nickname {args.package}.")
                 )
             else:
                 print(Cyan(args.package) + ": " + Green(repo_url))
@@ -422,9 +434,7 @@ def main(sargs):
         else:
             print(
                 Red("ERROR") +
-                ": Repo with nickname {name} not found!".format(
-                        name=args.package
-                    )
+                f(": Repo with nickname {args.package} not found!")
             )
     else:
         print(Red("ERROR") + ": Unknown command '" + args.method + "'!")

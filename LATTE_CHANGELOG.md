@@ -1,5 +1,8 @@
 # Latte Changelog
 
+## 2.0.2
+- f-strings are now parsed with `f()` for formatting strings in older versions of Python (2.7+, 3.5).
+
 ## 2.0.1
 - Minor bugfixes, mainly to support Python 2.
 - All f-strings have been replaced with `format()` for better compatibility.
