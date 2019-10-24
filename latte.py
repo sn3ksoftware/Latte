@@ -23,10 +23,24 @@ __copyright__ = "Copyright (c) Seanld/sn3ksoftware 2017-2019, MIT License."
 desc = f"apt-get for Pythonista, version {__version__}.\n{__copyright__}"
 
 
-cwd = os.getcwd()
-ROOT = os.path.expanduser("~/Documents")
+def onstash():
+    """Check if Latte is running on StaSh."""
+    try:
+        globals()['_stash']
+    except KeyError:
+        return False
+    else:
+        return True
+
+
+if onstash():
+    ROOT = os.path.expanduser("~/Documents")
+else:
+    ROOT = os.path.expanduser("~/Library")
+
+
 SWPATH = join(ROOT, ".latte-repos.swconf")
-LATTEPATH = join(ROOT, "stash_extensions", "latte")
+LATTEPATH = join(ROOT, ".latte")
 BINPATH = join(ROOT, "bin")
 
 
@@ -53,15 +67,6 @@ description=Enter description of your app here
 version=0.0.1
 """
 
-
-def onstash():
-    """Check if Latte is running on StaSh."""
-    try:
-        globals()['_stash']
-    except KeyError:
-        return False
-    else:
-        return True
 
 if onstash():
     class ansi:
