@@ -50,9 +50,9 @@ python installer.py
 
 ## Repositories
 
-_Latte_ uses [this](https://github.com/sn3ksoftware/latte-universe) repository for packages by default
+_Latte_ uses [this](https://github.com/sn3ksoftware/latte-universe) repository for packages by default.
 
-(with nickname **universe**).
+(with the nickname **universe**).
 
 ## Getting Started
 
