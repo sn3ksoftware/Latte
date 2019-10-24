@@ -16,6 +16,11 @@ _Latte_ is also a platform for easily creating your own commands for StaSh. It a
 
 ## Installing
 
+_Latte_ requires a relatively recent version of Python (2.7+/3.5+).
+The only external dependency needed is `requests`.
+
+(preinstalled on Libterm/Pythonista).
+
 _Latte_ supports these platforms right now:
 
 - [x] Libterm
