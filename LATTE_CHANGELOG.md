@@ -1,6 +1,10 @@
 # Latte Changelog
 
-## 2.0.0-alpha
+## 2.0.1
+- Minor bugfixes, mainly to support Python 2.
+- All f-strings have been replaced with `format()` for better compatibility.
+
+## 2.0.0
 - Joining file paths now uses `os.path.join()`.
 - `ROOT` variable is now set as `os.path.expanduser("~/Documents")` on StaSh and `os.path.expanduser("~/Library")` on Libterm.
 - Repos can now be removed with `latte del-repo nickname`.
@@ -14,5 +18,5 @@
 - To update Latte, you can just do `latte install latte`.
 - Yellow colours for `WARNING` level alerts.
 
-## 1.0.0-alpha
+## 1.2.0
 - Initial fork from the main Latte repo (Seanld/Latte).

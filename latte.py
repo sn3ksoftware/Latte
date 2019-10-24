@@ -1,11 +1,13 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 A package manager meant for Pythonista, built on StaSh.
-# Code copyright (c) Seanld/sn3ksoftware 2017-2019, MIT License.
-# This is a fork by sn3ksoftware to enable
+Code copyright (c) Seanld/sn3ksoftware 2017-2019, MIT License.
+This is a fork by sn3ksoftware to enable
 compatibility with other platforms (i.e Libterm.)
+Works on Python 2.7+ and Python 3.6+.
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
 import argparse
 import os
@@ -16,11 +18,13 @@ from os.path import join
 
 import requests
 
-
-__version__ = "2.0.0-alpha"
+__version__ = "2.0.1-alpha"
 __author__ = "Seanld/sn3ksoftware"
 __copyright__ = "Copyright (c) Seanld/sn3ksoftware 2017-2019, MIT License."
-desc = f"apt-get for Pythonista, version {__version__}.\n{__copyright__}"
+desc = "apt-get for Pythonista, version {v}.\n{c}".format(
+    v=__version__,
+    c=__copyright__
+)
 
 
 def onstash():
@@ -163,7 +167,10 @@ def init():
             except Exception as e:
                 print(
                     Red("ERROR") +
-                    f": Could not create {path}. Traceback: {str(e)}"
+                    ": Could not create {p}. Traceback: {err}".format(
+                            p=path,
+                            err=str(e)
+                        )
                 )
             else:
                 continue
@@ -316,7 +323,9 @@ def main(sargs):
         except Exception as e:
             print(
                 Red("ERROR") +
-                f": Couldn't remove package. Exception: {str(e)}"
+                ": Couldn't remove package. Exception: {err}".format(
+                        err=str(e)
+                    )
             )
             sys.exit()
         print(Green("SUCCESS") + ": '" + args.package + "' removed!")
@@ -383,7 +392,9 @@ def main(sargs):
             except KeyError:
                 print(
                     Red("ERROR") +
-                    f": No repository with nickname {args.package}."
+                    ": No repository with nickname {name}.".format(
+                            name=args.packqge
+                        )
                 )
             else:
                 print(Cyan(args.package) + ": " + Green(repo_url))
@@ -411,7 +422,9 @@ def main(sargs):
         else:
             print(
                 Red("ERROR") +
-                f": Repo with nickname {args.package} not found!"
+                ": Repo with nickname {name} not found!".format(
+                        name=args.package
+                    )
             )
     else:
         print(Red("ERROR") + ": Unknown command '" + args.method + "'!")
