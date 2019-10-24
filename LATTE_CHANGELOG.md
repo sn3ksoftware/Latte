@@ -3,6 +3,7 @@
 ## 2.0.1
 - Minor bugfixes, mainly to support Python 2.
 - All f-strings have been replaced with `format()` for better compatibility.
+- `__future__` imports have been added (specifically, `absolute_import` and `unicode_literals`.)
 
 ## 2.0.0
 - Joining file paths now uses `os.path.join()`.
