@@ -3,7 +3,7 @@
 """
 A package manager meant for Pythonista, built on StaSh.
 Code copyright (c) Seanld/sn3ksoftware 2017-2019, MIT License.
-This is a fork by sn3ksoftware to enable
+This is a fork by sn3ksoftware to patch
 compatibility with other platforms (i.e Libterm.)
 Works on Python 2.7+ and Python 3.6+.
 """
@@ -21,33 +21,42 @@ import requests
 
 def f(fstr):
     """f-strings for older versions of Python
-    i.e 2.7+, 3.5-.
+    i.e 2.7, 3.5 and eariler.
     Uses globals(), which is somewhat hacky.
     """
     if type(fstr) is str:
-        fstr_p = fstr.format(**globals())
-        return fstr_p
+        return fstr.format(**globals())
     else:
         return None
 
 
-__version__ = "2.0.2-alpha"
+__version__ = "2.1.0-alpha"
 __author__ = "Seanld/sn3ksoftware"
 __copyright__ = "Copyright (c) Seanld/sn3ksoftware 2017-2019, MIT License."
 desc = f("apt-get for Pythonista, version {__version__}.\n{__copyright__}")
 
+# Tuple of user-facing functions
+func_tuple = (
+    "install",
+    "remove",
+    "new",
+    "addrepo",
+    "listrepo",
+    "delrepo"
+)
 
-def onstash():
-    """Check if Latte is running on StaSh."""
+
+def onpy():
+    """Check if Latte is running on Pythonista."""
     try:
-        globals()['_stash']
+        import objc_util
     except KeyError:
         return False
     else:
         return True
 
 
-if onstash():
+if onpy():
     ROOT = os.path.expanduser("~/Documents")
 else:
     ROOT = os.path.expanduser("~/Library")
@@ -82,7 +91,7 @@ version=0.0.1
 """
 
 
-if onstash():
+if onpy():
     class ansi:
         """Collection of Stash's ANSI escape codes."""
         bold = u"\033[1m"
@@ -114,6 +123,7 @@ else:
         italic = u"\u001b[3m"
         underscore = u"\x9b4m"
         attr_end = u"\u001b[0m"
+
         # All 'bright' colours execpt for red and brown.
         fore_red = u"\u001b[31m"
         fore_yellow = u"\u001b[91m"
@@ -183,17 +193,34 @@ def init():
                 err = str(e)
                 print(
                     Red("ERROR") +
-                f(": Could not create {path}. Traceback: {err}")
+                    f(": Could not create {path}. Traceback: {err}")
                 )
             else:
                 continue
 
 
+def loadconfig(PATH):
+    """Load Latte's repo configuration from
+    the PATH. A dictionary of the config data is returned, otherwise None."""
+    try:
+        f = open(PATH, "r")
+    except FileNotFoundError:
+        return None
+    else:
+        confobj = SWConfig(f.read())
+        if confobj is None:
+            return None
+        else:
+            return confobj.data
+
+
 def download_package(url, package_name):
-    """Handles the installation of packages
-    directories (since they're no longer
-    tarfiles)"""
+    """Download a Latte package from the url
+    to the current directory (under dir
+    'package_name')."""
+    
     content_listing = ["bin.py", "meta.latte"]
+    
     try:
         os.mkdir(join(ROOT, package_name))
     except OSError:
@@ -216,7 +243,251 @@ def download_package(url, package_name):
     return True
 
 
-def main(sargs):
+def install(pkg_name):
+    """Install packages from a repo. pkg_name
+    can be 'nickname/package', where nickname
+    is the name of the repo (universe by
+    default)."""
+
+    REPOSITORIES = loadconfig(SWPATH)
+    packageSplitted = pkg_name.split("/")
+
+    try:
+        package_name = packageSplitted[1]
+        repo_to_use = REPOSITORIES[packageSplitted[0]]
+    except IndexError:
+        repo_to_use = REPOSITORIES["universe"]
+        package_name = packageSplitted[0]
+        print(
+            Yellow("WARNING") +
+            ": No repository specified, using universe by default..."
+        )
+
+    try:
+        download_package(repo_to_use, package_name)
+    except requests.ConnectionError:
+        print(
+            Red("ERROR") +
+            ": Couldn't find package. Check your Internet connection?"
+        )
+        sys.exit()
+    except requests.HTTPError:
+        print(
+            Red("ERROR") +
+            ": Invaild HTTP response. Contact the server admin/repo owner."
+        )
+        sys.exit()
+    except Exception as e:
+        err = str(e)
+        print(
+            Red("ERROR") +
+            ": Unhandled exception occured. Content: {err}"
+        )
+        sys.exit()
+
+    # Move to correct locations
+    print("Extracting package files...")
+    try:
+        os.rename(
+            join(ROOT, package_name, "meta.latte"),
+            join(LATTEPATH, package_name + ".latte")
+        )
+    except Exception as e:
+        err = str(e)
+        print(
+            Red("ERROR") +
+            f(": Could not move meta.latte to LATTEPATH. Error: {err}")
+        )
+        sys.exit()
+    else:
+        pass
+    
+    try:
+        os.rename(
+            join(ROOT, package_name, "bin.py"),
+            join(BINPATH, package_name + ".py")
+        )
+    except Exception as e:
+        err = str(e)
+        print(
+            Red("ERROR") +
+            f(": Could not move bin.py to BINPATH. Exeception: {err}")
+        )
+    else:
+        pass
+    
+    shutil.rmtree(join(ROOT, package_name))
+    print(
+        Green("SUCCESS") +
+        ": Package '" +
+        package_name +
+        "' successfully installed!"
+    )
+    return True
+
+
+def remove(pkg_name):
+    """Remove installed packages with name
+    'pkg_name'."""
+    
+    try:
+        os.remove(join(BINPATH, pkg_name + ".py"))
+        os.remove(join(LATTEPATH, pkg_name + ".latte"))
+    except FileNotFoundError:
+        print(
+            Red("ERROR") +
+            ": Couldn't remove package; Not found in registry."
+        )
+        sys.exit()
+    except Exception as e:
+        err = str(e)
+        print(
+            Red("ERROR") +
+            f(": Couldn't remove package. Exception: {err}")
+        )
+        sys.exit()
+    print(Green("SUCCESS") + ": '" + pkg_name + "' removed!")
+    return True
+
+
+def new(pkg_name, path=None):
+    """Create a new package with name
+    'pkg_name' in the path provided. By
+    default, create in the current directory.
+    """
+    
+    if path is None:
+        path = os.getcwd()
+    pkg_path = join(path, pkg_name)
+
+    try:
+        os.mkdir(pkg_path)
+        config = open(join(pkg_path, "meta.latte"), "w")
+        config.write(meta_template)
+        config.close()
+        index = open(join(pkg_path, "bin.py"), "w")
+        index.write(dev_template)
+        index.close()
+    except FileExistsError:
+        print(
+            Red("ERROR") +
+            ": Couldn't generate package; directory may already exist."
+        )
+        sys.exit()
+    except Exception as e:
+        err = str(e)
+        print(
+            Red("ERROR") +
+            f(": Exception occured. Traceback: {err}")
+        )
+        sys.exit()
+    else:
+        print(
+            Green("SUCCESS") +
+            ": Package '" +
+            pkg_name +
+            "' generated, check current working directory!"
+        )
+        return True
+
+
+def addrepo(url):
+    """Add a repo url to the Latte swconfig.
+    """
+
+    request = requests.get(url + "/init.latte")
+    if request:
+        data = request.text
+        data_org = SWConfig(data)
+    else:
+        print(
+            Red("ERROR") +
+            ": Repository URL is inaccessible. Request returned error code " +
+            str(request.status_code) +
+            "."
+        )
+        sys.exit()
+    
+    try:
+        nickname = data_org["NICKNAME"]
+    except KeyError:
+        print(
+            Red("ERROR") +
+            ": Repo does not contain an 'init.latte' file."
+        )
+        sys.exit()
+    else:
+        repo_listing = open(SWPATH, "a")
+        repo_listing.write("\n" + nickname + "=" + url)
+        repo_listing.close()
+        print(
+            Green("SUCCESS") +
+            ": '" +
+            nickname +
+            "' added to repositories!"
+        )
+        return True
+
+
+def listrepo(pattern):
+    """List repositories in the Latte swconf by pattern."""
+
+    REPOSITORIES = loadconfig(SWPATH)
+
+    if pattern == "all":
+        opened = open(SWPATH)
+        content = opened.read()
+        opened.close()
+        as_config = SWConfig(content)
+        for repo in as_config.keys():
+            print(Cyan(repo) + ": " + Green(as_config[repo]))
+    else:
+        # Search for repo nickname in swconfig
+        try:
+            repo_url = REPOSITORIES[pattern]
+        except KeyError:
+            print(
+                Red("ERROR") +
+                f(": No repository with nickname {pattern}.")
+            )
+        else:
+            print(Cyan(pattern) + ": " + Green(repo_url))
+
+
+def delrepo(nickname):
+    """Remove repository URL with name 'nickname'."""
+    
+    REPOSITORIES = loadconfig(SWPATH)
+    
+    # Check if nickname in swconfig
+    if nickname in REPOSITORIES:
+        # Pop out the nickname and write back
+        removed = REPOSITORIES.pop(nickname)
+        # Erase the file first
+        swfile_w = open(SWPATH, "w")
+        swfile_w.write("")
+        # Write back changed dict
+        swfile_a = open(SWPATH, "a")
+        for key, val in REPOSITORIES.items():
+            swfile_a.write("\n" + key + "=" + val)
+        swfile_a.close()
+        print(
+            Green("SUCCESS") +
+            ": Removed repo " +
+            Green(removed) +
+            " with nickname " +
+            Cyan(nickname) + "."
+        )
+        return True
+    else:
+        print(
+            Red("ERROR") +
+            f(": Repo with nickname {nickname} not found!")
+        )
+        sys.exit()
+
+
+def _main(sargs):
     init()
     
     parser = argparse.ArgumentParser(
@@ -224,13 +495,14 @@ def main(sargs):
     )
     parser.add_argument(
         "method",
-        help="install, remove, new, add-repo, list-repos, del-repo",
+        help="install, remove, new, addrepo, listrepo, delrepo",
         type=str
     )
     parser.add_argument(
-        "package",
-        help="Name of package/nickname of repo (i.e, universe, all)",
-        type=str
+        nargs="*",
+        action="store",
+        dest="input",
+        help="Package name/repo nickname (i.e, 'universe', 'all')"
     )
     args = parser.parse_args(sargs)
 
@@ -248,197 +520,28 @@ def main(sargs):
         )
         opened.close()
 
-    repo_listing_opened = open(SWPATH, "r")
-    listing_content = repo_listing_opened.read()
-    repo_listing_opened.close()
-    REPOSITORIES = SWConfig(listing_content)
-
-    if args.method == "install":
-        packageSplitted = args.package.split("/")
-        try:
-            package_name = packageSplitted[1]
-            repo_to_use = REPOSITORIES[packageSplitted[0]]
-        except IndexError:
-
-            repo_to_use = REPOSITORIES["universe"]
-            package_name = packageSplitted[0]
-            print(
-                Yellow("WARNING") +
-                ": No repository specified, using universe by default..."
-            )
-        try:
-            download_package(repo_to_use, package_name)
-        except requests.ConnectionError:
+    if args.method in func_tuple:
+        func = eval(args.method)
+        # Check if it is empty
+        if not bool(args.input):
             print(
                 Red("ERROR") +
-                ": Couldn't find package. Check your Internet connection?"
-            )
-            sys.exit()
-        except requests.HTTPError:
-            print(
-                Red("ERROR") +
-                ": Invaild HTTP response. Contact the server admin/repo owner."
-            )
-            sys.exit()
-        except Exception as e:
-            print(
-                Red("ERROR") +
-                ": Unhandled exception occured. Content: " +
-                e
-            )
-            sys.exit()
-        # Move to correct locations
-        print("Extracting package files...")
-        try:
-            os.rename(
-                join(ROOT, package_name, "meta.latte"),
-                join(LATTEPATH, package_name + ".latte")
-            )
-        except Exception as e:
-            err = str(e)
-            print(
-                Red("ERROR") +
-                f(": Could not move meta.latte to LATTEPATH. Error: {err}")
-            )
-            sys.exit()
-        else:
-            pass
-        
-        try:
-            os.rename(
-                join(ROOT, package_name, "bin.py"),
-                join(BINPATH, package_name + ".py")
-            )
-        except Exception as e:
-            err = str(e)
-            print(
-                Red("ERROR") +
-                f(": Could not move bin.py to BINPATH. Exeception: {err}")
+                ": Secondary input (i.e latte [method] input) is required."
             )
         else:
-            pass
-        
-        shutil.rmtree(join(ROOT, package_name))
-        print(
-            Green("SUCCESS") +
-            ": Package '" +
-            package_name +
-            "' successfully installed!"
-        )
-    elif args.method == "remove":
-        try:
-            os.remove(join(BINPATH, args.package + ".py"))
-            os.remove(join(LATTEPATH, args.package + ".latte"))
-        except FileNotFoundError:
-            print(
-                Red("ERROR") +
-                ": Couldn't remove package; Not found in registry."
-            )
-            sys.exit()
-        except Exception as e:
-            err = str(e)
-            print(
-                Red("ERROR") +
-                ": Couldn't remove package. Exception: {err}"
-            )
-            sys.exit()
-        print(Green("SUCCESS") + ": '" + args.package + "' removed!")
-    elif args.method == "new":
-        try:
-            os.mkdir(args.package)
-            config = open(join(args.package, "meta.latte"), "w")
-            config.write(meta_template)
-            config.close()
-            index = open(join(args.package, "bin.py"), "w")
-            index.write(dev_template)
-            index.close()
-            print(
-                Green("SUCCESS") +
-                ": Package '" +
-                args.package +
-                "' generated, check current working directory!"
-            )
-        except FileExistsError:
-            print(
-                Red("ERROR") +
-                ": Couldn't generate package; directory may already exist."
-            )
-        except Exception as e:
-            err = str(e)
-            print(
-                Red("ERROR") +
-                ": Exception occured. Traceback: {err}"
-            )
-    elif args.method == "add-repo":
-        try:
-            request = requests.get(args.package + "/init.latte")
-            data = request.text
-            request.close()
-            data_org = SWConfig(data)
-            nickname = data_org["NICKNAME"]
-            repo_listing = open(SWPATH, "a")
-            repo_listing.write("\n" + nickname + "=" + args.package)
-            repo_listing.close()
-            print(
-                Green("SUCCESS") +
-                ": '" +
-                nickname +
-                "' added to repositories!"
-                )
-        except:
-            print(
-                Red("ERROR") +
-                ": Either repository doesn't exist," +
-                "or does not contain an 'init.latte' file."
-            )
-    elif args.method == "list-repos":
-        if args.package == "all":
-            opened = open(SWPATH)
-            content = opened.read()
-            opened.close()
-            as_config = SWConfig(content)
-            for repo in as_config.keys():
-                print(Cyan(repo) + ": " + Green(as_config[repo]))
-        else:
-            # Search for repo nickname in swconfig
-            try:
-                repo_url = REPOSITORIES[args.package]
-            except KeyError:
-                print(
-                    Red("ERROR") +
-                    f(": No repository with nickname {args.package}.")
-                )
-            else:
-                print(Cyan(args.package) + ": " + Green(repo_url))
-    elif args.method == "del-repo":
-        # Check if nickname in swconfig
-        repo_d = REPOSITORIES.data
-        if args.package in repo_d:
-            # Pop out the nickname and write back
-            removed = repo_d.pop(args.package)
-            # Erase the file first
-            swfile_w = open(SWPATH, "w")
-            swfile_w.write("")
-            # Write back changed dict
-            swfile_a = open(SWPATH, "a")
-            for key, val in repo_d.items():
-                swfile_a.write("\n" + key + "=" + val)
-            swfile_a.close()
-            print(
-                Green("SUCCESS") +
-                ": Removed repo " +
-                Green(removed) +
-                " with nickname " +
-                Cyan(args.package) + "."
-            )
-        else:
-            print(
-                Red("ERROR") +
-                f(": Repo with nickname {args.package} not found!")
-            )
+            func(args.input[0])
     else:
         print(Red("ERROR") + ": Unknown command '" + args.method + "'!")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    try:
+        _main(sys.argv[1:])
+    except KeyboardInterrupt:
+        print(
+            Red("ERROR") +
+            ": Latte was terminated with Ctrl-C."
+        )
+        sys.exit()
+    else:
+        pass

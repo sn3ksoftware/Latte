@@ -1,5 +1,9 @@
 # Latte Changelog
 
+## 2.1.0
+- CODE REFACTOR: Code for the methods (install, remove, etc.) have been abstracted to their own functions. Now Latte is (kind of) scriptable.
+- `main()` has been renamed to `_main()`, and it now catches `KeyboardInterrupt`s.
+
 ## 2.0.2
 - f-strings are now parsed with `f()` for formatting strings in older versions of Python (2.7+, 3.5).
 
